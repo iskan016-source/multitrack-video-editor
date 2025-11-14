@@ -1,4 +1,6 @@
 Name,Description
-Extension 1,Description 1
-Extension 2,Description 2
-Extension 3,Description 3
+Image Transitions, Images can fade in and out, smoothly fade into each other
+Cut button, Video clips and image clips can be split into separate pieces with a cut button
+Image overlays and reposition, Allow users to place images over the top of other images and adjust the size and location
+Pause button, add a separate pause button from the play button
+Zoom-in, add a slider that allows users to zoom in and out
