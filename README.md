@@ -1,5 +1,8 @@
 # VideoEditor - Multi-Track Video Editing Application
+<<<<<<< HEAD
 Group Members: Shane McCue, Idiris Muumin, Manvel Iskandaryan, Noah Turnquist
+=======
+>>>>>>> b6ead078f4cb03a1d720831d3bf6cdc53a933e5a
 
 A C++ video editing application with timeline-based composition, multiple tracks, filters, captions, and export capabilities built using modern design patterns.
 
