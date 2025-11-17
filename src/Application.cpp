@@ -136,7 +136,14 @@ void Application::addFilters() {
   filterPanel->addTextButton("Chroma", [this]() {
     // Green screen effect
     std::string code =
-    "trackColor = vec4(trackColor.r, 0.0, trackColor.b, (trackColor.r + trackColor.b) / 2)\n";
+    "float supressionCoefficient = 30.0;"
+    "float greenStrength = trackColor.g - (trackColor.r + trackColor.b) / 2;"
+    "if (greenStrength > 0) {"
+    "  trackColor.r -= greenStrength * supressionCoefficient;"
+    "  trackColor.g -= greenStrength * supressionCoefficient;"
+    "  trackColor.b -= greenStrength * supressionCoefficient;"
+    "  trackColor.a -= greenStrength * supressionCoefficient;"
+    "}";
     this->trackFilters[this->trackSelected] = code;
     this->trackShader->update(this->trackFilters);
   });
