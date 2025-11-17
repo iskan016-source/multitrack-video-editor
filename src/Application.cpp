@@ -135,6 +135,10 @@ void Application::addFilters() {
 
   filterPanel->addTextButton("Chroma", [this]() {
     // Green screen effect
+    std::string code =
+    "trackColor = vec4(trackColor.r, 0.0, trackColor.b, (trackColor.r + trackColor.b) / 2)\n";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
   });
 
   filterPanel->addTextButton("Circle", [this]() {
