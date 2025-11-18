@@ -128,6 +128,11 @@ void Application::addFilters() {
 
   filterPanel->addTextButton("Greyscale", [this]() {
     // Greyscale the image
+    std::string code =
+        "float L = (trackColor.r + trackColor.g + trackColor.b) / 3.0;\n"
+        "trackColor = vec4(L, L, L, trackColor.a);\n";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
   });
 
   filterPanel->addTextButton("Red", [this]() {
