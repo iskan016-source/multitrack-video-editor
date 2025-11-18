@@ -119,6 +119,11 @@ void Application::addFilters() {
 
   filterPanel->addTextButton("High", [this]() {
     // Calculate a high threshold
+    std::string code = "if (trackColor.r < 0.75) {\n"
+                       "   trackColor = vec4(0, 0, 0, 0);\n"
+                       "}\n";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
   });
 
   filterPanel->addTextButton("Greyscale", [this]() {
@@ -148,6 +153,9 @@ void Application::addFilters() {
 
   filterPanel->addTextButton("Disolve", [this]() {
     // Set the transparency of the trackColor to disolve over time
+    std::string code = "trackColor.a *= (1.0 - time);\n";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
   });
 
   filterPanel->addTextButton("Special", [this]() {
