@@ -164,6 +164,9 @@ void Application::addFilters() {
 
   filterPanel->addTextButton("Disolve", [this]() {
     // Set the transparency of the trackColor to disolve over time
+    std::string code = "trackColor.a *= (1.0 - time);\n";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
   });
 
   filterPanel->addTextButton("Special", [this]() {
