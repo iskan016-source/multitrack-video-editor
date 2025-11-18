@@ -160,6 +160,13 @@ void Application::addFilters() {
   filterPanel->addTextButton("Circle", [this]() {
     // Set the transparency the the trackColor to 0 if it is outside of the
     // circle
+      float gain = 0.0;
+    float increment = 0.01;
+      std::string code =
+        "float gain = 0.0;"
+        "float increment = 0.01;"
+        "trackColor = vec4(gain, gain, gain, 1);"
+        "gain += increment;";
   });
 
   filterPanel->addTextButton("Disolve", [this]() {
