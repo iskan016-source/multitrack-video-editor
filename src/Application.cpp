@@ -128,11 +128,6 @@ void Application::addFilters() {
 
   filterPanel->addTextButton("Greyscale", [this]() {
     // Greyscale the image
-    std::string code =
-        "float L = (trackColor.r + trackColor.g + trackColor.b) / 3.0;\n"
-        "trackColor = vec4(L, L, L, trackColor.a);\n";
-    this->trackFilters[this->trackSelected] = code;
-    this->trackShader->update(this->trackFilters);
   });
 
   filterPanel->addTextButton("Red", [this]() {
@@ -144,6 +139,18 @@ void Application::addFilters() {
 
   filterPanel->addTextButton("Chroma", [this]() {
     // Green screen effect
+    std::string code =
+        "float supressionCoefficient = 30.0;"
+        "float greenStrength = trackColor.g - (trackColor.r + trackColor.b) / "
+        "2;"
+        "if (greenStrength > 0) {"
+        "  trackColor.r -= greenStrength * supressionCoefficient;"
+        "  trackColor.g -= greenStrength * supressionCoefficient;"
+        "  trackColor.b -= greenStrength * supressionCoefficient;"
+        "  trackColor.a -= greenStrength * supressionCoefficient;"
+        "}";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
   });
 
   filterPanel->addTextButton("Circle", [this]() {
@@ -153,9 +160,6 @@ void Application::addFilters() {
 
   filterPanel->addTextButton("Disolve", [this]() {
     // Set the transparency of the trackColor to disolve over time
-    std::string code = "trackColor.a *= (1.0 - time);\n";
-    this->trackFilters[this->trackSelected] = code;
-    this->trackShader->update(this->trackFilters);
   });
 
   filterPanel->addTextButton("Special", [this]() {
