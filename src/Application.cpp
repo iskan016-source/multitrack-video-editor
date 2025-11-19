@@ -170,7 +170,16 @@ void Application::addFilters() {
   });
 
   filterPanel->addTextButton("Special", [this]() {
-    // Come up with your own filter.
+    // Yellow tint special filter
+    std::string code =
+        "// Warm yellow tint\n"
+        "// More red & green, slightly less blue\n"
+        "trackColor.r *= 1.25;\n"
+        "trackColor.g *= 1.15;\n"
+        "trackColor.b *= 0.90;\n";
+
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
   });
 }
 
