@@ -160,14 +160,14 @@ void Application::addFilters() {
   filterPanel->addTextButton("Circle", [this]() {
     // Set the transparency the the trackColor to 0 if it is outside of the
     // circle
-      std::string code =
-        "// Normalize coordinates (0 to 1, resolution independent)"
-        "float x = gl_FragCoord.x / resolution.x;"
-        "float y = gl_FragCoord.y / resolution.y;"
-        "// Find eucladian normalized distance from center"
-        "// a^2 + b^2 = c^2"
-        "float distance = pow(pow(abs(x - 0.5), 2) + pow(abs(y - 0.5), 2), 0.5);"
-        "trackColor.a = 1.0 - distance;";
+     std::string code =
+        "float distance = (pos.x - 0.5) * (pos.x - 0.5) + (pos.y - 0.5) * (pos.y - 0.5);"
+        "distance = sqrt(distance) ;"
+	"if (distance > 0.5) {"
+	"  trackColor = vec4(0.0, 0.0, 0.0, 0.0);"
+	"}\n";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
   });
 
   filterPanel->addTextButton("Disolve", [this]() {
