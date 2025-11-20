@@ -160,6 +160,14 @@ void Application::addFilters() {
   filterPanel->addTextButton("Circle", [this]() {
     // Set the transparency the the trackColor to 0 if it is outside of the
     // circle
+     std::string code =
+        "float distance = (pos.x - 0.5) * (pos.x - 0.5) + (pos.y - 0.5) * (pos.y - 0.5);"
+        "distance = sqrt(distance) ;"
+	"if (distance > 0.5) {"
+	"  trackColor = vec4(0.0, 0.0, 0.0, 0.0);"
+	"}\n";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
   });
 
   filterPanel->addTextButton("Disolve", [this]() {
