@@ -137,7 +137,7 @@ void Application::addFilters() {
 
   filterPanel->addTextButton("Red", [this]() {
     // Only show the red channel
-    std::string code = "trackColor = vec4(trackColor.r, 0.0, 0.0, 1.0);\n";
+    std::string code = "trackColor = vec4(trackColor.r, 0.0, 0.0, trackColor.a);\n";
     this->trackFilters[this->trackSelected] = code;
     this->trackShader->update(this->trackFilters);
   });
