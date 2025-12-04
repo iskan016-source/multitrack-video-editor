@@ -20,6 +20,7 @@
 // Include glad and glfw for graphics and windowing
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
+static csci3081::Application *g_app = nullptr;
 
 namespace csci3081 {
 
@@ -33,6 +34,16 @@ Application::Application() : blank(10, 10) {
 
   window = new Window();
   window->addObserver(*this);
+
+  g_app = this;
+
+  glfwSetKeyCallback(
+      window->getWindow(),
+      [](GLFWwindow *win, int key, int scancode, int action, int mods) {
+        if (action == GLFW_PRESS && g_app) {
+          g_app->onKeyPress(key);
+        }
+      });
 
   // Initialize new components
   timeline = nullptr;
@@ -86,14 +97,14 @@ void Application::addFilters() {
   // * trackColor -  the color (RGBA) of the current track texture (See Low
   // threshold filter)
 
-  filterPanel->addTextButton("None", [this]() {
+  filterPanel->addTextButton("None (0)", [this]() {
     // Reset the filter
     std::string code = "";
     this->trackFilters[this->trackSelected] = code;
     this->trackShader->update(this->trackFilters);
   });
 
-  filterPanel->addTextButton("Bright", [this]() {
+  filterPanel->addTextButton("Bright (1)", [this]() {
     // Calculate brighten the entire image
     std::string code = "aggregateColor *= vec4(2.0, 2.0, 2.0, 1);\n"
                        "trackColor *= vec4(2.0, 2.0, 2.0, 1);\n";
@@ -101,14 +112,14 @@ void Application::addFilters() {
     this->trackShader->update(this->trackFilters);
   });
 
-  filterPanel->addTextButton("Gradient", [this]() {
+  filterPanel->addTextButton("Gradient (2)", [this]() {
     // Draw a color gradient
     std::string code = "trackColor *= vec4(pos.x , pos.y, time, 1.0);\n";
     this->trackFilters[this->trackSelected] = code;
     this->trackShader->update(this->trackFilters);
   });
 
-  filterPanel->addTextButton("Low", [this]() {
+  filterPanel->addTextButton("Low (3)", [this]() {
     // Calculate a low threshold
     std::string code = "if (trackColor.r < 0.25) {\n"
                        "   trackColor = vec4(0, 0, 0, 0);\n"
@@ -117,7 +128,7 @@ void Application::addFilters() {
     this->trackShader->update(this->trackFilters);
   });
 
-  filterPanel->addTextButton("High", [this]() {
+  filterPanel->addTextButton("High (4)", [this]() {
     // Calculate a high threshold
     std::string code = "if (trackColor.r < 0.75) {\n"
                        "   trackColor = vec4(0, 0, 0, 0);\n"
@@ -126,7 +137,7 @@ void Application::addFilters() {
     this->trackShader->update(this->trackFilters);
   });
 
-  filterPanel->addTextButton("Greyscale", [this]() {
+  filterPanel->addTextButton("Greyscale (5)", [this]() {
     // Greyscale the image
     std::string code =
         "float L = (trackColor.r + trackColor.g + trackColor.b) / 3.0;\n"
@@ -135,62 +146,159 @@ void Application::addFilters() {
     this->trackShader->update(this->trackFilters);
   });
 
-  filterPanel->addTextButton("Red", [this]() {
+  filterPanel->addTextButton("Red (6)", [this]() {
     // Only show the red channel
-    std::string code = "trackColor = vec4(trackColor.r, 0.0, 0.0, trackColor.a);\n";
+    std::string code =
+        "trackColor = vec4(trackColor.r, 0.0, 0.0, trackColor.a);\n";
     this->trackFilters[this->trackSelected] = code;
     this->trackShader->update(this->trackFilters);
   });
 
-  filterPanel->addTextButton("Chroma", [this]() {
+  filterPanel->addTextButton("Chroma (7)", [this]() {
     // Green screen effect
     std::string code =
-    "float supressionCoefficient = 30.0;"
-    "float greenStrength = trackColor.g - (trackColor.r + trackColor.b) / 2;"
-    "if (greenStrength > 0) {"
-    "  trackColor.r -= greenStrength * supressionCoefficient;"
-    "  trackColor.g -= greenStrength * supressionCoefficient;"
-    "  trackColor.b -= greenStrength * supressionCoefficient;"
-    "  trackColor.a -= greenStrength * supressionCoefficient;"
-    "}";
+        "float supressionCoefficient = 30.0;"
+        "float greenStrength = trackColor.g - (trackColor.r + trackColor.b) / "
+        "2;"
+        "if (greenStrength > 0) {"
+        "  trackColor.r -= greenStrength * supressionCoefficient;"
+        "  trackColor.g -= greenStrength * supressionCoefficient;"
+        "  trackColor.b -= greenStrength * supressionCoefficient;"
+        "  trackColor.a -= greenStrength * supressionCoefficient;"
+        "}";
     this->trackFilters[this->trackSelected] = code;
     this->trackShader->update(this->trackFilters);
   });
 
-  filterPanel->addTextButton("Circle", [this]() {
+  filterPanel->addTextButton("Circle (8)", [this]() {
     // Set the transparency the the trackColor to 0 if it is outside of the
     // circle
-     std::string code =
-        "float distance = (pos.x - 0.5) * (pos.x - 0.5) + (pos.y - 0.5) * (pos.y - 0.5);"
-        "distance = sqrt(distance) ;"
-	"if (distance > 0.5) {"
-	"  trackColor = vec4(0.0, 0.0, 0.0, 0.0);"
-	"}\n";
+    std::string code = "float distance = (pos.x - 0.5) * (pos.x - 0.5) + "
+                       "(pos.y - 0.5) * (pos.y - 0.5);"
+                       "distance = sqrt(distance) ;"
+                       "if (distance > 0.5) {"
+                       "  trackColor = vec4(0.0, 0.0, 0.0, 0.0);"
+                       "}\n";
     this->trackFilters[this->trackSelected] = code;
     this->trackShader->update(this->trackFilters);
   });
 
-  filterPanel->addTextButton("Disolve", [this]() {
+  filterPanel->addTextButton("Disolve (9)", [this]() {
     // Set the transparency of the trackColor to disolve over time
     std::string code = "trackColor.a *= (1.0 - time);\n";
     this->trackFilters[this->trackSelected] = code;
     this->trackShader->update(this->trackFilters);
   });
 
-  filterPanel->addTextButton("Special", [this]() {
+  filterPanel->addTextButton("Special (S)", [this]() {
     // Yellow tint special filter
-    std::string code =
-        "// Warm yellow tint\n"
-        "// More red & green, slightly less blue\n"
-        "trackColor.r *= 1.25;\n"
-        "trackColor.g *= 1.15;\n"
-        "trackColor.b *= 0.90;\n";
+    std::string code = "// Warm yellow tint\n"
+                       "// More red & green, slightly less blue\n"
+                       "trackColor.r *= 1.25;\n"
+                       "trackColor.g *= 1.15;\n"
+                       "trackColor.b *= 0.90;\n";
 
     this->trackFilters[this->trackSelected] = code;
     this->trackShader->update(this->trackFilters);
   });
 }
 
+void Application::onKeyPress(int key) {
+  if (key == GLFW_KEY_0) {
+    std::string code = "";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
+  }
+  if (key == GLFW_KEY_1) {
+    // Calculate brighten the entire image
+    std::string code = "aggregateColor *= vec4(2.0, 2.0, 2.0, 1);\n"
+                       "trackColor *= vec4(2.0, 2.0, 2.0, 1);\n";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
+  }
+  if (key == GLFW_KEY_2) {
+    // Draw a color gradient
+    std::string code = "trackColor *= vec4(pos.x , pos.y, time, 1.0);\n";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
+  }
+  if (key == GLFW_KEY_3) {
+    // Calculate a low threshold
+    std::string code = "if (trackColor.r < 0.25) {\n"
+                       "   trackColor = vec4(0, 0, 0, 0);\n"
+                       "}\n";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
+  }
+  if (key == GLFW_KEY_4) {
+    // Calculate a high threshold
+    std::string code = "if (trackColor.r < 0.75) {\n"
+                       "   trackColor = vec4(0, 0, 0, 0);\n"
+                       "}\n";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
+  }
+  if (key == GLFW_KEY_5) {
+    // Greyscale the image
+    std::string code =
+        "float L = (trackColor.r + trackColor.g + trackColor.b) / 3.0;\n"
+        "trackColor = vec4(L, L, L, trackColor.a);\n";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
+  }
+  if (key == GLFW_KEY_6) {
+    // Only show the red channel
+    std::string code =
+        "trackColor = vec4(trackColor.r, 0.0, 0.0, trackColor.a);\n";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
+  }
+  if (key == GLFW_KEY_7) {
+    // Green screen effect
+    std::string code =
+        "float supressionCoefficient = 30.0;"
+        "float greenStrength = trackColor.g - (trackColor.r + trackColor.b) / "
+        "2;"
+        "if (greenStrength > 0) {"
+        "  trackColor.r -= greenStrength * supressionCoefficient;"
+        "  trackColor.g -= greenStrength * supressionCoefficient;"
+        "  trackColor.b -= greenStrength * supressionCoefficient;"
+        "  trackColor.a -= greenStrength * supressionCoefficient;"
+        "}";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
+  }
+  if (key == GLFW_KEY_8) {
+    // Set the transparency the the trackColor to 0 if it is outside of the
+    // circle
+    std::string code = "float distance = (pos.x - 0.5) * (pos.x - 0.5) + "
+                       "(pos.y - 0.5) * (pos.y - 0.5);"
+                       "distance = sqrt(distance) ;"
+                       "if (distance > 0.5) {"
+                       "  trackColor = vec4(0.0, 0.0, 0.0, 0.0);"
+                       "}\n";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
+  }
+  if (key == GLFW_KEY_9) {
+    // Set the transparency of the trackColor to disolve over time
+    std::string code = "trackColor.a *= (1.0 - time);\n";
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
+  }
+
+  if (key == GLFW_KEY_S) {
+    // Yellow tint special filter
+    std::string code = "// Warm yellow tint\n"
+                       "// More red & green, slightly less blue\n"
+                       "trackColor.r *= 1.25;\n"
+                       "trackColor.g *= 1.15;\n"
+                       "trackColor.b *= 0.90;\n";
+
+    this->trackFilters[this->trackSelected] = code;
+    this->trackShader->update(this->trackFilters);
+  }
+}
 int Application::run(int argc, char *argv[]) {
 
   // --------------------------------------------------------------------
@@ -608,8 +716,8 @@ int Application::run(int argc, char *argv[]) {
         const TimelineEntry *entry = track->getEntryAt(timeSinceStart);
         if (!entry) {
           // Uncomment for verbose debugging:
-          // std::cout << "Track " << i << " (" << track->getName() << ") has no
-          // entry at time " << time << "s" << std::endl;
+          // std::cout << "Track " << i << " (" << track->getName() << ") has
+          // no entry at time " << time << "s" << std::endl;
           trackTextures[i]->copyToGPU(blank);
           continue; // No entry active on this track at this time
         }
@@ -830,8 +938,8 @@ void Application::onMouseClick(int button, int action, int mods) {
     }
   }
 
-  // Handle track visualization clicks for track/entry selection, dragging, and
-  // resizing
+  // Handle track visualization clicks for track/entry selection, dragging,
+  // and resizing
   if (action == GLFW_PRESS && trackVisualization) {
     int clickedTrack, clickedEntry;
 
