@@ -298,6 +298,14 @@ void Application::onKeyPress(int key) {
     this->trackFilters[this->trackSelected] = code;
     this->trackShader->update(this->trackFilters);
   }
+
+  if (key == GLFW_KEY_SPACE) {
+    is_playing = !is_playing;
+
+    if (is_playing) {
+      startPlayTime = std::chrono::steady_clock::now();
+    }
+  }
 }
 int Application::run(int argc, char *argv[]) {
 
