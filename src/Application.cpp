@@ -24,6 +24,9 @@ static csci3081::Application *g_app = nullptr;
 
 namespace csci3081 {
 
+const double FrameRate = 30.0;
+const double FRAME_DURATION = 1.0 / FrameRate;
+
 Application::Application() : blank(10, 10) {
 
   glfwInit();
@@ -300,11 +303,31 @@ void Application::onKeyPress(int key) {
   }
 
   if (key == GLFW_KEY_SPACE) {
-    is_playing = !is_playing;
+	  std::cout << "Pressed space" << std::endl;
+	  this->is_playing = !this->is_playing;
+	  if (this->is_playing) {
+	    double current_time = timeline->getCurrentTime();
+	    startPlayTime = std::chrono::steady_clock::now() - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(current_time));
+	  }
+  }
 
-    if (is_playing) {
-      startPlayTime = std::chrono::steady_clock::now();
-    }
+  if (key == GLFW_KEY_LEFT) {
+    is_playing = false;
+    double current_time = timeline->getCurrentTime();
+    double new_time = std::max(0.0, current_time - FRAME_DURATION);
+    timeline->setCurrentTime(new_time);
+
+    startPlayTime = std::chrono::steady_clock::now() - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(new_time));
+  }
+
+  if (key == GLFW_KEY_RIGHT) {
+    is_playing = false;
+    double current_time = timeline->getCurrentTime();
+    double max_time = timeline->getTotalDuration();
+    double new_time = std::min(max_time, current_time + FRAME_DURATION);
+    timeline->setCurrentTime(new_time);
+
+    startPlayTime = std::chrono::steady_clock::now() - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(new_time));
   }
 }
 int Application::run(int argc, char *argv[]) {
@@ -525,7 +548,8 @@ int Application::run(int argc, char *argv[]) {
                  0.05, 0.1, Image("assets/images/play.png"), [this]() {
                    this->is_playing = !this->is_playing;
                    if (this->is_playing) {
-                     startPlayTime = std::chrono::steady_clock::now();
+		     double current_time = timeline->getCurrentTime();
+                     startPlayTime = std::chrono::steady_clock::now() - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(current_time));
                    }
                  });
   play->setBorder(false);
@@ -693,6 +717,8 @@ int Application::run(int argc, char *argv[]) {
         timeSinceStart = 0.0;
         timeline->setCurrentTime(0.0);
       }
+    } else {
+      timeSinceStart = timeline->getCurrentTime();
     }
 
     // Render the timeline composite at current time
